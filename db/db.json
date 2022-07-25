@@ -1,0 +1,12 @@
+{
+  "users": {
+    "customers": {},
+    "employees": {}
+  },
+  "products": {
+    "series": {},
+    "movies": {},
+    "documentaries": {}
+  },
+  "buys": {}
+}
