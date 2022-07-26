@@ -1,7 +1,25 @@
 {
   "users": {
-    "customers": {},
-    "employees": {}
+    "customers": {
+      "0001": {
+        "username": "brenulevi",
+        "password": "123123"
+      }
+    },
+    "employees": {
+      "0001": {
+        "username": "brenulevi",
+        "password": "123123"
+      },
+      "0002": {
+        "username": "judahmilhomem",
+        "password": "eusougay"
+      },
+      "0003": {
+        "username": "eduardovinicius",
+        "password": "eudouotoba"
+      }
+    }
   },
   "products": {
     "series": {},
