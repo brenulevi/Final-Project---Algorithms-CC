@@ -22,9 +22,24 @@
     }
   },
   "products": {
-    "series": {},
-    "movies": {},
-    "documentaries": {}
+    "123456": {
+      "name": "Harry Potter",
+      "type": "2",
+      "price": "1280.9",
+      "can_buy": true
+    },
+    "987654": {
+      "name": "Deus da Guerra",
+      "type": "2",
+      "price": "2000.0",
+      "can_buy": false
+    },
+    "234567": {
+      "name": "Minha Mãe é uma peça",
+      "type": 2,
+      "price": "10.0",
+      "can_buy": true
+    }
   },
   "buys": {}
 }

@@ -5,6 +5,7 @@ import json
 #endregion
 
 #region Functions
+
 # Function for get user location for buys location
 def getLocation():
   Nomi_locator = Nominatim(user_agent="My app")
@@ -25,13 +26,15 @@ def getUser():
   elif user_type == "2": return "Employees"
   else:
     print("Invalid answer, try again!")
-    getUser()
+    return getUser()
 
+# Function for create a random safe password
 def createSafePassword():
   return "123123"
 
+# Function for validate if the user exists or not
 def ValidateCredentials(user_type, username, password, caller):
-  file = open("./db/db.json", "r+")
+  file = open("./db/db.json", "r+", encoding='utf8')
   db = json.load(file)
   file.close()
   users = list(db["users"][user_type.lower()].values())
@@ -67,13 +70,29 @@ def ValidateCredentials(user_type, username, password, caller):
             "password": password
           }
         }
-      else:
-        return {
-          "validated": False
-        }
+    return {
+      "validated": False
+    }
+
+# Function for validate if the product exists or not
+def ValidateProduct(code):
+  file = open("./db/db.json", "r+", encoding='utf8')
+  db = json.load(file)
+  file.close()
+
+  keys = list(db["products"])
+
+  for key in keys:
+    if int(key) == code:
+      return {
+        "validated": False
+      }
+  return {
+    "validated": True
+  }
 #endregion
 
-#region App Class
+#region Classes
 class NerdFlix:
   
   #Federative Unit
@@ -93,7 +112,7 @@ class NerdFlix:
       response = ValidateCredentials(self.user_type, username, password, "create")
       if response["validated"] == True:
         
-        file = open("./db/db.json", "r+")
+        file = open("./db/db.json", "r+", encoding='utf8')
         db = json.load(file)
         file.close()
 
@@ -108,15 +127,15 @@ class NerdFlix:
         }
 
         db["users"][self.user_type.lower()][id] = user
-        to_change_file = open("./db/db.json", "w")
-        json.dump(db, to_change_file, indent=2)
+        to_change_file = open("./db/db.json", "w", encoding='utf8')
+        json.dump(db, to_change_file, indent=2, ensure_ascii=False)
         to_change_file.close()
 
         print("Account created succesfully!")
         self.active_user = response["user"]
       else:
         print("We saw here that you already have an account, try to login!")
-        nerdFlix.Login()
+        self.Login()
 
   
   #Login user with her credentials
@@ -132,8 +151,8 @@ class NerdFlix:
       self.Login()
 
 class Customer:
-  def __init__(self) -> None:
-    self.active_user = nerdFlix.active_user
+  def __init__(self, active_user) -> None:
+    self.active_user = active_user
     pass
 
   def Dashboard(self):
@@ -149,10 +168,11 @@ class Customer:
 class Employeer:
   def __init__(self, active_user) -> None:
     self.active_user = active_user
+    self.procedures = [self.RegisterProduct, self.SearchProduct, self.UpdateProduct, self.BuysHistory, self.UpdateAccount, self.Exit]
     pass
 
   def Dashboard(self):
-    answer = input(
+    answer = int(input(
         f"Hello {self.active_user['username']}, what do you want to do?\n"
         "1 - Register product\n"
         "2 - Search product\n"
@@ -160,8 +180,69 @@ class Employeer:
         "4 - Customers buys\n"
         "5 - Update my account\n"
         "6 - Exit NerdFlix\n"  
-      )
+      )) - 1
+    if answer <= 5 and answer >= 0:
+      self.procedures[answer]()
+    else:
+      print("Invalid answer! try again")
+      self.Dashboard()
 
+  def RegisterProduct(self):
+    print("Nice! Let's register a product!")
+    code = int(input("First things first, send me the product code: "))
+    name = input("Thanks! Now I need the product name: ")
+
+    type = 0
+    while type != 1 and type != 2 and type != 3:
+      type = int(input("Product type (1 - Serie / 2 - Movie / 3 - Documentary): "))
+
+    price = input("Product price (0000.00): ")
+
+    can_buy = 0
+    while can_buy != 1 and can_buy != 2:
+      can_buy = int(input("This product can be bought? (1 - Yes / 2 - No): "))
+    if can_buy == 1:
+      can_buy = True
+    elif can_buy == 2:
+      can_buy = False
+
+    product = {
+      "name": name,
+      "type": type,
+      "price": price,
+      "can_buy": can_buy
+    }
+
+    response = ValidateProduct(code)
+    if response["validated"] == True:
+
+      file = open("./db/db.json", "r+", encoding='utf8')
+      db = json.load(file)
+      file.close()
+
+      db["products"][str(code)] = product
+      to_change_file = open("./db/db.json", "w", encoding='utf8')
+      json.dump(db, to_change_file, indent=2, ensure_ascii=False)
+      to_change_file.close()
+
+      print("Product created!")
+      self.Dashboard()
+
+  def SearchProduct(self):
+    print("Search!!!")
+
+  def UpdateProduct(self):
+    print("Update!!!")
+
+  def BuysHistory(self):
+    print("History!!!")
+  
+  def UpdateAccount(self):
+    print("Account!!!")
+
+  def Exit(self):
+    print("Exit!!!")
+    
 #endregion
 
 #region Interactions
