@@ -1,5 +1,4 @@
 #region Imports
-from operator import contains
 from geopy.geocoders import Nominatim
 import geocoder
 import json
@@ -132,15 +131,37 @@ class NerdFlix:
       print("Invalid credentials, try again!")
       self.Login()
 
+class Customer:
+  def __init__(self) -> None:
+    self.active_user = nerdFlix.active_user
+    pass
+
   def Dashboard(self):
-    if self.user_type == "Customers":
-      print(
-        f"Hello! {self.active_user['username']}, what do you want to do?\n"
+    answer = input(
+        f"Hello {self.active_user['username']}, what do you want to do?\n"
         "1 - Let's buy!\n"
-        "2 - Update my account\n"
-        "3 - Delete my account\n"
-        "4 - Exit NerdFlix"  
+        "2 - See my buys\n"
+        "3 - Update my account\n"
+        "4 - Delete my account\n"
+        "5 - Exit NerdFlix\n"  
       )
+
+class Employeer:
+  def __init__(self, active_user) -> None:
+    self.active_user = active_user
+    pass
+
+  def Dashboard(self):
+    answer = input(
+        f"Hello {self.active_user['username']}, what do you want to do?\n"
+        "1 - Register product\n"
+        "2 - Search product\n"
+        "3 - Update product\n"
+        "4 - Customers buys\n"
+        "5 - Update my account\n"
+        "6 - Exit NerdFlix\n"  
+      )
+
 #endregion
 
 #region Interactions
@@ -161,6 +182,10 @@ while True:
   else:
     print("Invalid answer, try again!")
 
-if nerdFlix.active_user:
-  nerdFlix.Dashboard()
+if nerdFlix.user_type == "Customers":
+  user = Customer(nerdFlix.active_user)
+  user.Dashboard()
+elif nerdFlix.user_type == "Employees":
+  user = Employeer(nerdFlix.active_user)
+  user.Dashboard()
 #endregion
