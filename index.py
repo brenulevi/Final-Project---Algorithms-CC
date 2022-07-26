@@ -4,6 +4,7 @@ import geocoder
 import json
 import string
 import secrets
+import pandas
 #endregion
 
 #region Functions
@@ -92,6 +93,15 @@ def ValidateProduct(code):
   return {
     "validated": True
   }
+
+def FindAllProducts():
+  return True
+
+def FindByCode():
+  return True
+
+def FindProductsByType(type):
+  return True
 #endregion
 
 #region Classes
@@ -231,7 +241,29 @@ class Employeer:
       self.Dashboard()
 
   def SearchProduct(self):
-    print("Search!!!")
+    print("Nice! Let's search for a product")
+
+    answer = input("Choose a option:\n"
+              "all - List all products\n"
+              "1 - List all series\n"
+              "2 - List all movies\n"
+              "3 - List all documentaries\n"
+              "4 - Found product by code")
+    if answer.lower() == "all":
+      products = FindAllProducts()
+
+      headers = ["Code", "Name", "Type", "Price", "Can Buy"]
+
+      print(pandas.DataFrame(products, headers, headers))
+    else:
+      if answer == "4":
+        FindByCode()
+
+        #print table
+      else:
+        FindProductsByType(int(answer))
+
+        #print table
 
   def UpdateProduct(self):
     print("Update!!!")
