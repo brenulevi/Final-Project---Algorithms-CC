@@ -13,24 +13,24 @@
       },
       "0002": {
         "username": "judahmilhomem",
-        "password": "eusougay"
+        "password": "coolguy"
       },
       "0003": {
         "username": "eduardovinicius",
-        "password": "eudouotoba"
+        "password": "tupareviuboi"
       }
     }
   },
   "products": {
     "123456": {
       "name": "Harry Potter",
-      "type": "2",
+      "type": 2,
       "price": "1280.9",
       "can_buy": true
     },
     "987654": {
       "name": "Deus da Guerra",
-      "type": "2",
+      "type": 2,
       "price": "2000.0",
       "can_buy": false
     },

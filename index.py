@@ -2,6 +2,8 @@
 from geopy.geocoders import Nominatim
 import geocoder
 import json
+import string
+import secrets
 #endregion
 
 #region Functions
@@ -30,7 +32,7 @@ def getUser():
 
 # Function for create a random safe password
 def createSafePassword():
-  return "123123"
+  return ''.join(secrets.choice(string.ascii_letters + string.digits + '-_') for i in range(10))
 
 # Function for validate if the user exists or not
 def ValidateCredentials(user_type, username, password, caller):
@@ -108,34 +110,34 @@ class NerdFlix:
     password = input("Type your password, use a secure one! If you want type 123 and we create a safe password to you!\n")
     if password == "123":
       password = createSafePassword()
-    else:
-      response = ValidateCredentials(self.user_type, username, password, "create")
-      if response["validated"] == True:
-        
-        file = open("./db/db.json", "r+", encoding='utf8')
-        db = json.load(file)
-        file.close()
 
-        if len(list(db["users"][self.user_type.lower()].keys())) > 0:
-          id = format(int(list(db["users"][self.user_type.lower()].keys())[-1]) + 1, '04d')
-        else:
-          id = "0001"
+    response = ValidateCredentials(self.user_type, username, password, "create")
+    if response["validated"] == True:
+      
+      file = open("./db/db.json", "r+", encoding='utf8')
+      db = json.load(file)
+      file.close()
 
-        user = {
-          "username": username,
-          "password": password
-        }
-
-        db["users"][self.user_type.lower()][id] = user
-        to_change_file = open("./db/db.json", "w", encoding='utf8')
-        json.dump(db, to_change_file, indent=2, ensure_ascii=False)
-        to_change_file.close()
-
-        print("Account created succesfully!")
-        self.active_user = response["user"]
+      if len(list(db["users"][self.user_type.lower()].keys())) > 0:
+        id = format(int(list(db["users"][self.user_type.lower()].keys())[-1]) + 1, '04d')
       else:
-        print("We saw here that you already have an account, try to login!")
-        self.Login()
+        id = "0001"
+
+      user = {
+        "username": username,
+        "password": password
+      }
+
+      db["users"][self.user_type.lower()][id] = user
+      to_change_file = open("./db/db.json", "w", encoding='utf8')
+      json.dump(db, to_change_file, indent=2, ensure_ascii=False)
+      to_change_file.close()
+
+      print("Account created succesfully!")
+      self.active_user = response["user"]
+    else:
+      print("We saw here that you already have an account, try to login!")
+      self.Login()
 
   
   #Login user with her credentials
