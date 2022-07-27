@@ -1,5 +1,4 @@
 #region Imports
-from textwrap import indent
 from geopy.geocoders import Nominatim
 import geocoder
 import json
@@ -22,15 +21,6 @@ def getLocation():
   location = str(Nomi_locator.reverse(f"{latitude}, {longitude}")).split(",")[-4].strip(" ")
 
   return location
-
-# Function for get what type of user is (Customer or employeer)
-def getUser():
-  user_type = input("Hello! Who are you? Type 1 for CUSTOMER or 2 for EMPLOYEER\n")
-  if user_type == "1": return "Customers"
-  elif user_type == "2": return "Employees"
-  else:
-    print("Invalid answer, try again!")
-    return getUser()
 
 # Function for create a random safe password
 def createSafePassword():
@@ -103,9 +93,13 @@ def FindAllProducts():
 
   values = list(db["products"].values())
   keys = list(db["products"])
+
+  types = ["serie", "movie", "documentary"]
+
   for product in values:
     product["code"] = keys[values.index(product)]
-  
+    product["type"] = types[product["type"]-1]
+    
   products_dict = {}
   for item in values:
     name = item.pop('code')
@@ -121,8 +115,12 @@ def FindByCode(code):
 
   values = list(db["products"].values())
   keys = list(db["products"])
+
+  types = ["serie", "movie", "documentary"]
+
   for product in values:
     product["code"] = keys[values.index(product)]
+    product["type"] = types[product["type"]-1]
 
   for product in values:
     if product["code"] == code:
@@ -138,6 +136,9 @@ def FindProductsByType(type):
 
   values = list(db["products"].values())
   keys = list(db["products"])
+  
+  types = ["serie", "movie", "documentary"]
+  
   for product in values:
     product["code"] = keys[values.index(product)]
 
@@ -146,6 +147,7 @@ def FindProductsByType(type):
   
   for product in values:
     if product["type"] == type:
+      product["type"] = types[product["type"]-1]
       filtered_products[count] = product
       count+=1
     
@@ -153,18 +155,49 @@ def FindProductsByType(type):
     return "Products don't exists"
   else:
     return filtered_products
-
 #endregion
 
 #region Classes
 class NerdFlix:
-  
-  #Federative Unit
-  uf = getLocation()
+
   #User type
   user_type = ""
   #What user is active now
   active_user = {}
+
+  def __init__(self) -> None:
+    self.proceed = self.Start()
+    if self.proceed == True:
+      self.user_type = self.getUser()
+    self.getAccount()
+    pass
+
+  # Initialize App
+  def Start(self):
+    print("============== WELCOME TO NERDFLIX ==============")
+    print("\n\n\n")
+    input("            Press any key to proceed             ")
+    return True
+
+  # Get what type of user is (Customer or employeer)
+  def getUser(self):
+    user_type = input("Hello! Who are you? Type 1 for CUSTOMER or 2 for EMPLOYEER\n")
+    if user_type == "1": return "Customers"
+    elif user_type == "2": return "Employees"
+    else:
+      print("Invalid answer, try again!")
+      return self.getUser()
+
+  # Get if user have or not an account
+  def getAccount(self):
+    have_account = input(f"Hello Mr/Ms {self.user_type}, Do you have an account? Type 1 for YES or 2 for NO\n")
+    if have_account == "1": 
+      self.Login()
+    elif have_account == "2": 
+      self.CreateAccount()
+    else:
+      print("Invalid answer, try again!")
+      self.getAccount()
 
   #Create account if user haven't
   def CreateAccount(self):
@@ -313,7 +346,6 @@ class Employeer:
         end_answer = input("Press 1 to go back to Dashboard\n")
 
       self.Dashboard()
-
     else:
       if answer == "4":
         response = FindByCode(input("What's the product code?\n"))
@@ -332,8 +364,6 @@ class Employeer:
             self.SearchProduct()
           else:
             self.Dashboard()
-
-        #print table
       elif answer == "1" or answer == "2" or answer == "3":
         response = FindProductsByType(int(answer))
 
@@ -352,8 +382,6 @@ class Employeer:
             self.SearchProduct()
           else:
             self.Dashboard()
-
-        #print table
       else:
         print("Invalid answer, try again")
         self.SearchProduct()
@@ -374,20 +402,6 @@ class Employeer:
 #region Interactions
 #Instantiate App class
 nerdFlix = NerdFlix()
-
-#Set what type of user is using the app
-nerdFlix.user_type = getUser()
-
-while True:
-  have_account = input(f"Hello Mr/Ms {nerdFlix.user_type}, Do you have an account? Type 1 for YES or 2 for NO\n")
-  if have_account == "1": 
-    nerdFlix.Login()
-    break
-  elif have_account == "2": 
-    nerdFlix.CreateAccount()
-    break
-  else:
-    print("Invalid answer, try again!")
 
 if nerdFlix.user_type == "Customers":
   user = Customer(nerdFlix.active_user)
