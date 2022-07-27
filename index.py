@@ -1,4 +1,5 @@
 #region Imports
+from textwrap import indent
 from geopy.geocoders import Nominatim
 import geocoder
 import json
@@ -94,14 +95,65 @@ def ValidateProduct(code):
     "validated": True
   }
 
+# Function for return all products on db
 def FindAllProducts():
-  return True
+  file = open("./db/db.json", "r+", encoding='utf8')
+  db = json.load(file)
+  file.close()
 
-def FindByCode():
-  return True
+  values = list(db["products"].values())
+  keys = list(db["products"])
+  for product in values:
+    product["code"] = keys[values.index(product)]
+  
+  products_dict = {}
+  for item in values:
+    name = item.pop('code')
+    products_dict[name] = item
 
+  return products_dict
+  
+# Function for return a specific product on db based in code
+def FindByCode(code):
+  file = open("./db/db.json", "r+", encoding='utf8')
+  db = json.load(file)
+  file.close()
+
+  values = list(db["products"].values())
+  keys = list(db["products"])
+  for product in values:
+    product["code"] = keys[values.index(product)]
+
+  for product in values:
+    if product["code"] == code:
+      return product
+  
+  return "Product don't exists"
+
+# Function for return all products based on type passed
 def FindProductsByType(type):
-  return True
+  file = open("./db/db.json", "r+", encoding='utf8')
+  db = json.load(file)
+  file.close()
+
+  values = list(db["products"].values())
+  keys = list(db["products"])
+  for product in values:
+    product["code"] = keys[values.index(product)]
+
+  filtered_products = {}
+  count = 0
+  
+  for product in values:
+    if product["type"] == type:
+      filtered_products[count] = product
+      count+=1
+    
+  if len(filtered_products) == 0:
+    return "Products don't exists"
+  else:
+    return filtered_products
+
 #endregion
 
 #region Classes
@@ -148,8 +200,7 @@ class NerdFlix:
     else:
       print("We saw here that you already have an account, try to login!")
       self.Login()
-
-  
+ 
   #Login user with her credentials
   def Login(self):
     username = input("Alright! Give me you username\n")
@@ -248,22 +299,64 @@ class Employeer:
               "1 - List all series\n"
               "2 - List all movies\n"
               "3 - List all documentaries\n"
-              "4 - Found product by code")
+              "4 - Found product by code\n")
     if answer.lower() == "all":
       products = FindAllProducts()
+      df = pandas.DataFrame(data=products)
+      
+      print("\n ALL PRODUCTS\n")
+      print(df.transpose())
+      print("\n")
 
-      headers = ["Code", "Name", "Type", "Price", "Can Buy"]
+      end_answer = ""
+      while end_answer != "1":
+        end_answer = input("Press 1 to go back to Dashboard\n")
 
-      print(pandas.DataFrame(products, headers, headers))
+      self.Dashboard()
+
     else:
       if answer == "4":
-        FindByCode()
+        response = FindByCode(input("What's the product code?\n"))
+
+        if response != "Product don't exists":
+          df = pandas.DataFrame(data=response, index=[0])
+          print("\n")
+          print(df)
+          print("\n")
+
+          input("Press Enter to go back to Dashboard")
+          self.Dashboard()
+        else:
+          answer = input(f"{response}, do you want to try another search? (1 - YES)\n")
+          if answer == "1":
+            self.SearchProduct()
+          else:
+            self.Dashboard()
+
+        #print table
+      elif answer == "1" or answer == "2" or answer == "3":
+        response = FindProductsByType(int(answer))
+
+        if response != "Products don't exists":
+          df = pandas.DataFrame(data=response)
+      
+          print("\n")
+          print(df.transpose())
+          print("\n")
+
+          input("Press Enter to back to Dashboard\n")
+          self.Dashboard()
+        else:
+          answer = input(f"{response}, do you want to try another search? (1 - YES)\n")
+          if answer == "1":
+            self.SearchProduct()
+          else:
+            self.Dashboard()
 
         #print table
       else:
-        FindProductsByType(int(answer))
-
-        #print table
+        print("Invalid answer, try again")
+        self.SearchProduct()
 
   def UpdateProduct(self):
     print("Update!!!")
@@ -276,7 +369,6 @@ class Employeer:
 
   def Exit(self):
     print("Exit!!!")
-    
 #endregion
 
 #region Interactions
