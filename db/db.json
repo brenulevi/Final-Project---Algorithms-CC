@@ -23,10 +23,10 @@
   },
   "products": {
     "123456": {
-      "name": "Harry Potter",
-      "type": 2,
-      "price": "1280.9",
-      "can_buy": true
+      "name": "Como Treinar O Seu Dragão",
+      "type": 3,
+      "price": "143.2",
+      "can_buy": "True"
     },
     "987654": {
       "name": "Deus da Guerra",

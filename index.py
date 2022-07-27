@@ -8,7 +8,6 @@ import pandas
 #endregion
 
 #region Functions
-
 # Function for get user location for buys location
 def getLocation():
   Nomi_locator = Nominatim(user_agent="My app")
@@ -21,6 +20,8 @@ def getLocation():
   location = str(Nomi_locator.reverse(f"{latitude}, {longitude}")).split(",")[-4].strip(" ")
 
   return location
+
+
 
 # Function for create a random safe password
 def createSafePassword():
@@ -264,11 +265,11 @@ class Customer:
 class Employeer:
   def __init__(self, active_user) -> None:
     self.active_user = active_user
-    self.procedures = [self.RegisterProduct, self.SearchProduct, self.UpdateProduct, self.BuysHistory, self.UpdateAccount, self.Exit]
+    self.procedures = [self.RegisterProduct, self.SearchProduct, "", self.BuysHistory, self.UpdateAccount, self.Exit]
     pass
 
   def Dashboard(self):
-    answer = int(input(
+    answer = input(
         f"Hello {self.active_user['username']}, what do you want to do?\n"
         "1 - Register product\n"
         "2 - Search product\n"
@@ -276,9 +277,12 @@ class Employeer:
         "4 - Customers buys\n"
         "5 - Update my account\n"
         "6 - Exit NerdFlix\n"  
-      )) - 1
-    if answer <= 5 and answer >= 0:
-      self.procedures[answer]()
+      )
+    if int(answer) - 1 <= 5 and int(answer) - 1 >= 0:
+      if int(answer) - 1 == 2:
+        self.UpdateProduct(0)
+      else:
+        self.procedures[int(answer)-1]()
     else:
       print("Invalid answer! try again")
       self.Dashboard()
@@ -386,8 +390,98 @@ class Employeer:
         print("Invalid answer, try again")
         self.SearchProduct()
 
-  def UpdateProduct(self):
-    print("Update!!!")
+  def UpdateProduct(self, filter_procedure):
+    print("Let's update!")
+
+    procedures = [FindAllProducts, FindProductsByType]
+
+    if filter_procedure == 0:
+      products = procedures[filter_procedure]()
+    else:
+      products = procedures[1](filter_procedure)
+
+    if products != "Products don't exists":
+      df = pandas.DataFrame(data=products)
+      print("\n")
+      print(df.transpose())
+      print("\n")
+    else:
+      print("Products not found")
+      input("Press any key to try again")
+      self.UpdateProduct(0)
+
+    print("Type the product code to update: ")
+    answer = input(
+              "1 - Show all products  "
+              "2 - Show all series  "
+              "3 - Show all movies  "
+              "4 - Show all documentaries  "
+              "5 - Back to Dashboard\n")
+    if len(answer) == 6:
+      self.changeProduct(answer)
+    else:
+      if int(answer) > 0 and int(answer) < 5:
+        self.UpdateProduct(int(answer) - 1)
+      elif int(answer) == 5:
+        self.Dashboard()
+      else:
+        print("Invalid answer, try again")
+        self.UpdateProduct(0)
+
+  def changeProduct(self, code):
+    product = FindByCode(code)
+    df = pandas.DataFrame(data=product, index=[0])
+    print("Okay, this code represents that product:")
+    print("\n")
+    print(df)
+    print("\n")
+
+    while True:
+      answer = int(input(
+              "What element do you want to update?\n"
+              "1 - Name  "
+              "2 - Type  "
+              "3 - Price  "
+              "4 - Can Buy\n"))
+        
+      if answer > 5 and answer < 0:
+        print("Invalid answer, try again")
+      else:
+        break
+
+    code = product["code"]
+
+    del product["code"]
+
+    product_keys = list(product)
+    key = product_keys[answer-1]
+
+    new_value = input(f"Alright, at moment the value is {product[key]}, what'll be the new value?\n")
+    product[key] = new_value
+
+    file = open("./db/db.json", "r+", encoding="utf8")
+    db = json.load(file)
+    file.close()
+
+    db["products"][code] = product
+    if db["products"][code]["type"] == "serie":
+      db["products"][code]["type"] = 1
+    elif db["products"][code]["type"] == "movie":
+      db["products"][code]["type"] = 2
+    else:
+      db["products"][code]["type"] = 3
+
+    to_change = open("./db/db.json", "w", encoding="utf8")
+    json.dump(db, to_change, indent=2, ensure_ascii=False)
+    to_change.close()
+
+    print("Atualizado!")
+
+    answer = input("Do you want to update more? (1 - YES)\n")
+    if answer == "1":
+      self.changeProduct(code)
+    else:
+      self.Dashboard()
 
   def BuysHistory(self):
     print("History!!!")
