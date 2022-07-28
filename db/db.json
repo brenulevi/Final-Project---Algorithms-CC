@@ -2,8 +2,27 @@
   "users": {
     "customers": {
       "0001": {
+        "id": "0001",
         "username": "brenulevi",
-        "password": "123123"
+        "password": "123123",
+        "cart": {
+          "123456": {
+            "name": "Como Treinar O Seu Dragão",
+            "type": 3,
+            "price": "143.2",
+            "can_buy": "True",
+            "location": "Santa Catarina",
+            "date": "28/07/2022 17:25:10"
+          },
+          "987654": {
+            "name": "Deus da Guerra",
+            "type": 2,
+            "price": "2000.0",
+            "can_buy": false,
+            "location": "Santa Catarina",
+            "date": "28/07/2022 17:25:28"
+          }
+        }
       }
     },
     "employees": {
@@ -19,13 +38,17 @@
       "name": "Como Treinar O Seu Dragão",
       "type": 3,
       "price": "143.2",
-      "can_buy": "True"
+      "can_buy": "True",
+      "location": "Santa Catarina",
+      "date": "28/07/2022 17:25:10"
     },
     "987654": {
       "name": "Deus da Guerra",
       "type": 2,
       "price": "2000.0",
-      "can_buy": false
+      "can_buy": false,
+      "location": "Santa Catarina",
+      "date": "28/07/2022 17:25:28"
     },
     "234567": {
       "name": "Minha Mãe é uma peça",

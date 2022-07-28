@@ -1,4 +1,6 @@
 #region Imports
+from datetime import datetime
+from math import prod
 from geopy.geocoders import Nominatim
 import geocoder
 import json
@@ -49,11 +51,6 @@ def ValidateCredentials(user_type, username, password, caller):
     else:
       return {
         "validated": True,
-        "user": {
-          "id": user["id"],
-          "username": username,
-          "password": password
-        }
       }
   else:
     for user in users:
@@ -182,7 +179,7 @@ class NerdFlix:
     input("            Press any key to proceed             ")
     return True
 
-  # Get what type of user is (Customer or employeer)
+  # Method to get what type of user is (Customer or employeer)
   def getUser(self):
     user_type = input("Hello! Who are you? Type 1 for CUSTOMER or 2 for EMPLOYEER\n")
     if user_type == "1": return "Customers"
@@ -191,7 +188,7 @@ class NerdFlix:
       print("Invalid answer, try again!")
       return self.getUser()
 
-  # Get if user have or not an account
+  # Method to get if user have or not an account
   def getAccount(self):
     os.system('cls||clear')
     have_account = input(f"Hello Mr/Ms {self.user_type}, Do you have an account? Type 1 for YES or 2 for NO\n")
@@ -203,7 +200,7 @@ class NerdFlix:
       print("Invalid answer, try again!")
       self.getAccount()
 
-  #Create account if user haven't
+  # Method to create account if user haven't
   def CreateAccount(self):
     os.system('cls||clear')
     username = input("What'll be your username?\n")
@@ -226,7 +223,8 @@ class NerdFlix:
       user = {
         "id": id,
         "username": username,
-        "password": password
+        "password": password,
+        "cart": {}
       }
 
       db["users"][self.user_type.lower()][id] = user
@@ -235,14 +233,13 @@ class NerdFlix:
       to_change_file.close()
 
       print("Account created succesfully!")
-      self.active_user = response["user"]
+      self.active_user = user
     else:
       print("We saw here that you already have an account, try to login!")
       self.Login()
  
-  #Login user with her credentials
+  # Method to login user with her credentials
   def Login(self):
-    os.system('cls||clear')
     username = input("Alright! Give me you username\n")
     password = input("Received! Now your password, I promise it'll be very well protected\n")
     response = ValidateCredentials(self.user_type, username, password, "login")
@@ -253,6 +250,7 @@ class NerdFlix:
       print("Invalid credentials, try again!")
       self.Login()
 
+  # Method to update user data
   def UpdateAccount(self):
     os.system('cls||clear')
     file = open("./db/db.json", "r+", encoding="utf8")
@@ -276,24 +274,110 @@ class NerdFlix:
       to_change_file.close()
 
       input("Account updated! Press any key to back to dashboard!")
-      user.active_user = db["users"][self.user_type.lower()][self.active_user["id"]]
-      user.Dashboard()
-
+      user_active.active_user = db["users"][self.user_type.lower()][self.active_user["id"]]
+      user_active.Dashboard()
 
 class Customer:
   def __init__(self, active_user) -> None:
     self.active_user = active_user
+    self.procedures = [self.BuyProduct, self.MyBuyHistory, nerdFlix.UpdateAccount, self.Exit]
     pass
 
+  # DASHBOARD
   def Dashboard(self):
+    os.system('cls||clear')
     answer = input(
         f"Hello {self.active_user['username']}, what do you want to do?\n"
         "1 - Let's buy!\n"
         "2 - See my buys\n"
         "3 - Update my account\n"
-        "4 - Delete my account\n"
-        "5 - Exit NerdFlix\n"  
+        "4 - Exit NerdFlix\n"  
       )
+    if int(answer) - 1 <= 5 and int(answer) - 1 >= 0:
+      if int(answer) - 1 == 0:
+        self.BuyProduct(0)
+      else:
+        self.procedures[int(answer) - 1]()
+    else:
+      print("Invalid answer, try again")
+      self.Dashboard()
+
+  # Method to buy products
+  def BuyProduct(self, filter_procedure):
+    os.system('cls||clear')
+    print("Let's Buy!")
+
+    procedures = [FindAllProducts, FindProductsByType]
+
+    if filter_procedure == 0:
+      products = procedures[filter_procedure]()
+    else:
+      products = procedures[1](filter_procedure)
+
+    if products != "Products don't exists":
+      df = pandas.DataFrame(data=products)
+      print("\n")
+      print(df.transpose())
+      print("\n")
+    else:
+      print("Products not found")
+      input("Press any key to try again")
+      self.BuyProduct(0)
+
+    print("Type the product code to buy: ")
+    answer = input(
+              "1 - Show all products  "
+              "2 - Show all series  "
+              "3 - Show all movies  "
+              "4 - Show all documentaries  "
+              "5 - See my shop cart "
+              "6 - Back to Dashboard\n")
+    if len(answer) == 6:
+      #buy
+      response = ValidateProduct(answer)
+      if response["validated"] == True:
+        file = open("./db/db.json", "r+", encoding="utf8")
+        db = json.load(file)
+        file.close()
+
+        product_to_buy = db["products"][answer]
+        product_to_buy["location"] = getLocation()
+        product_to_buy["date"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        db["users"][nerdFlix.user_type.lower()][self.active_user["id"]]["cart"][answer] = product_to_buy
+
+        if len(list(db["buys"].keys())) > 0:
+          id = format(int(list(db["buys"][self.user_type.lower()].keys())[-1]) + 1, '04d')
+        else:
+          id = "0001"
+
+        # db["buys"][id] = product_to_buy
+        # db["buys"][id]["user"] = self.active_user
+
+        file_to_change = open("./db/db.json", "w", encoding="utf8")
+        json.dump(db, file_to_change, indent=2, ensure_ascii=False)
+        file_to_change.close()
+        
+      else:
+        input("Product not found, try another code")
+        self.BuyProduct(0)
+    else:
+      if int(answer) > 0 and int(answer) < 5:
+        self.BuyProduct(int(answer) - 1)
+      elif int(answer) == 6:
+        self.Dashboard()
+      elif int(answer) == 5:
+        self.MyCart()
+      else:
+        print("Invalid answer, try again")
+        self.BuyProduct(0)
+
+  # Method to see buy history
+  def MyBuyHistory(self):
+    print("History!")
+  
+  # Method to exit application
+  def Exit(self):
+    exit()
 
 class Employeer:
   def __init__(self, active_user) -> None:
@@ -301,6 +385,7 @@ class Employeer:
     self.procedures = [self.RegisterProduct, self.SearchProduct, "", self.BuysHistory, nerdFlix.UpdateAccount, self.Exit]
     pass
 
+  # DASHBOARD
   def Dashboard(self):
     os.system('cls||clear')
     answer = input(
@@ -321,6 +406,7 @@ class Employeer:
       print("Invalid answer! try again")
       self.Dashboard()
 
+  # Method to register a new product in database
   def RegisterProduct(self):
     os.system('cls||clear')
     print("Nice! Let's register a product!")
@@ -363,6 +449,7 @@ class Employeer:
       print("Product created!")
       self.Dashboard()
 
+  # Method to search for a product in specific or list they
   def SearchProduct(self):
     os.system('cls||clear')
     print("Nice! Let's search for a product")
@@ -426,6 +513,7 @@ class Employeer:
         print("Invalid answer, try again")
         self.SearchProduct()
 
+  # Method to get what product infos will be changed
   def UpdateProduct(self, filter_procedure):
     os.system('cls||clear')
     print("Let's update!")
@@ -465,6 +553,7 @@ class Employeer:
         print("Invalid answer, try again")
         self.UpdateProduct(0)
 
+  # Method who actually updates the product in database
   def ChangeProductOnDb(self, code):
     product = FindByCode(code)
     df = pandas.DataFrame(data=product, index=[0])
@@ -520,21 +609,24 @@ class Employeer:
     else:
       self.Dashboard()
 
+  # Method to see all buys history
   def BuysHistory(self):
     print("History!!!")
 
+  # Method to close application
   def Exit(self):
     exit()
 #endregion
 
 #region Interactions
+
 #Instantiate App class
 nerdFlix = NerdFlix()
 
 if nerdFlix.user_type == "Customers":
-  user = Customer(nerdFlix.active_user)
-  user.Dashboard()
+  user_active = Customer(nerdFlix.active_user)
+  user_active.Dashboard()
 elif nerdFlix.user_type == "Employees":
-  user = Employeer(nerdFlix.active_user)
-  user.Dashboard()
+  user_active = Employeer(nerdFlix.active_user)
+  user_active.Dashboard()
 #endregion
