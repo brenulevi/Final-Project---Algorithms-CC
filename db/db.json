@@ -8,16 +8,9 @@
     },
     "employees": {
       "0001": {
+        "id": "0001",
         "username": "brenulevi",
         "password": "123123"
-      },
-      "0002": {
-        "username": "judahmilhomem",
-        "password": "coolguy"
-      },
-      "0003": {
-        "username": "eduardovinicius",
-        "password": "tupareviuboi"
       }
     }
   },

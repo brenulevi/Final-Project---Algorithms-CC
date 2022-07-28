@@ -5,6 +5,7 @@ import json
 import string
 import secrets
 import pandas
+import os
 #endregion
 
 #region Functions
@@ -20,8 +21,6 @@ def getLocation():
   location = str(Nomi_locator.reverse(f"{latitude}, {longitude}")).split(",")[-4].strip(" ")
 
   return location
-
-
 
 # Function for create a random safe password
 def createSafePassword():
@@ -51,6 +50,7 @@ def ValidateCredentials(user_type, username, password, caller):
       return {
         "validated": True,
         "user": {
+          "id": user["id"],
           "username": username,
           "password": password
         }
@@ -61,6 +61,7 @@ def ValidateCredentials(user_type, username, password, caller):
         return {
           "validated": True,
           "user": {
+            "id": user["id"],
             "username": username,
             "password": password
           }
@@ -175,6 +176,7 @@ class NerdFlix:
 
   # Initialize App
   def Start(self):
+    os.system('cls||clear')
     print("============== WELCOME TO NERDFLIX ==============")
     print("\n\n\n")
     input("            Press any key to proceed             ")
@@ -191,6 +193,7 @@ class NerdFlix:
 
   # Get if user have or not an account
   def getAccount(self):
+    os.system('cls||clear')
     have_account = input(f"Hello Mr/Ms {self.user_type}, Do you have an account? Type 1 for YES or 2 for NO\n")
     if have_account == "1": 
       self.Login()
@@ -202,6 +205,7 @@ class NerdFlix:
 
   #Create account if user haven't
   def CreateAccount(self):
+    os.system('cls||clear')
     username = input("What'll be your username?\n")
     password = input("Type your password, use a secure one! If you want type 123 and we create a safe password to you!\n")
     if password == "123":
@@ -220,6 +224,7 @@ class NerdFlix:
         id = "0001"
 
       user = {
+        "id": id,
         "username": username,
         "password": password
       }
@@ -237,6 +242,7 @@ class NerdFlix:
  
   #Login user with her credentials
   def Login(self):
+    os.system('cls||clear')
     username = input("Alright! Give me you username\n")
     password = input("Received! Now your password, I promise it'll be very well protected\n")
     response = ValidateCredentials(self.user_type, username, password, "login")
@@ -246,6 +252,33 @@ class NerdFlix:
     else:
       print("Invalid credentials, try again!")
       self.Login()
+
+  def UpdateAccount(self):
+    os.system('cls||clear')
+    file = open("./db/db.json", "r+", encoding="utf8")
+    db = json.load(file)
+    file.close()
+
+    answer = input(f"Nice! I found you account here and the account info is:\nUsername: {db['users'][self.user_type.lower()][self.active_user['id']]['username']}\nPassword: {db['users'][self.user_type.lower()][self.active_user['id']]['password']}\n"
+              "What do you want to change?\n1 - Username\n2 - Password\n")
+    
+    possibilities = ["username", "password"]
+
+    if answer != "1" and answer != "2":
+      self.UpdateAccount()
+    else:
+      new_credential = input(f"Type your new {possibilities[int(answer)-1]}:\n")
+
+      db["users"][self.user_type.lower()][self.active_user["id"]][possibilities[int(answer)-1]] = new_credential
+      
+      to_change_file = open("./db/db.json", "w", encoding='utf8')
+      json.dump(db, to_change_file, indent=2, ensure_ascii=False)
+      to_change_file.close()
+
+      input("Account updated! Press any key to back to dashboard!")
+      user.active_user = db["users"][self.user_type.lower()][self.active_user["id"]]
+      user.Dashboard()
+
 
 class Customer:
   def __init__(self, active_user) -> None:
@@ -265,10 +298,11 @@ class Customer:
 class Employeer:
   def __init__(self, active_user) -> None:
     self.active_user = active_user
-    self.procedures = [self.RegisterProduct, self.SearchProduct, "", self.BuysHistory, self.UpdateAccount, self.Exit]
+    self.procedures = [self.RegisterProduct, self.SearchProduct, "", self.BuysHistory, nerdFlix.UpdateAccount, self.Exit]
     pass
 
   def Dashboard(self):
+    os.system('cls||clear')
     answer = input(
         f"Hello {self.active_user['username']}, what do you want to do?\n"
         "1 - Register product\n"
@@ -288,6 +322,7 @@ class Employeer:
       self.Dashboard()
 
   def RegisterProduct(self):
+    os.system('cls||clear')
     print("Nice! Let's register a product!")
     code = int(input("First things first, send me the product code: "))
     name = input("Thanks! Now I need the product name: ")
@@ -329,6 +364,7 @@ class Employeer:
       self.Dashboard()
 
   def SearchProduct(self):
+    os.system('cls||clear')
     print("Nice! Let's search for a product")
 
     answer = input("Choose a option:\n"
@@ -391,6 +427,7 @@ class Employeer:
         self.SearchProduct()
 
   def UpdateProduct(self, filter_procedure):
+    os.system('cls||clear')
     print("Let's update!")
 
     procedures = [FindAllProducts, FindProductsByType]
@@ -418,7 +455,7 @@ class Employeer:
               "4 - Show all documentaries  "
               "5 - Back to Dashboard\n")
     if len(answer) == 6:
-      self.changeProduct(answer)
+      self.ChangeProductOnDb(answer)
     else:
       if int(answer) > 0 and int(answer) < 5:
         self.UpdateProduct(int(answer) - 1)
@@ -428,7 +465,7 @@ class Employeer:
         print("Invalid answer, try again")
         self.UpdateProduct(0)
 
-  def changeProduct(self, code):
+  def ChangeProductOnDb(self, code):
     product = FindByCode(code)
     df = pandas.DataFrame(data=product, index=[0])
     print("Okay, this code represents that product:")
@@ -479,18 +516,15 @@ class Employeer:
 
     answer = input("Do you want to update more? (1 - YES)\n")
     if answer == "1":
-      self.changeProduct(code)
+      self.ChangeProductOnDb(code)
     else:
       self.Dashboard()
 
   def BuysHistory(self):
     print("History!!!")
-  
-  def UpdateAccount(self):
-    print("Account!!!")
 
   def Exit(self):
-    print("Exit!!!")
+    exit()
 #endregion
 
 #region Interactions
