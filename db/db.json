@@ -5,26 +5,7 @@
         "id": "0001",
         "username": "brenulevi",
         "password": "123123",
-        "cart": {
-          "123456": {
-            "name": "Como Treinar O Seu Dragão",
-            "type": "documentary",
-            "price": "143.2",
-            "can_buy": true,
-            "code": "123456",
-            "location": "Santa Catarina",
-            "date": "29/07/2022 07:22:00"
-          },
-          "234567": {
-            "name": "Minha Mãe é uma peça",
-            "type": "movie",
-            "price": "10.0",
-            "can_buy": true,
-            "code": "234567",
-            "location": "Santa Catarina",
-            "date": "29/07/2022 08:03:35"
-          }
-        }
+        "cart": {}
       }
     },
     "employees": {
@@ -56,33 +37,6 @@
     }
   },
   "buys": {
-    "0001": {
-      "name": "Como Treinar O Seu Dragão",
-      "type": "documentary",
-      "price": "143.2",
-      "can_buy": true,
-      "code": "123456",
-      "location": "Santa Catarina",
-      "date": "29/07/2022 07:22:00",
-      "user": {
-        "id": "0001",
-        "username": "brenulevi",
-        "password": "123123"
-      }
-    },
-    "0002": {
-      "name": "Minha Mãe é uma peça",
-      "type": "movie",
-      "price": "10.0",
-      "can_buy": true,
-      "code": "234567",
-      "location": "Santa Catarina",
-      "date": "29/07/2022 08:03:35",
-      "user": {
-        "id": "0001",
-        "username": "brenulevi",
-        "password": "123123"
-      }
-    }
+    
   }
 }

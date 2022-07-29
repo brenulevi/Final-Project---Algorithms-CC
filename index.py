@@ -1,6 +1,5 @@
 #region Imports
 from datetime import datetime
-from math import prod
 from geopy.geocoders import Nominatim
 import geocoder
 import json
@@ -9,6 +8,12 @@ import secrets
 import pandas
 import os
 #endregion
+
+# Pandas configuration
+pandas.set_option('display.max_rows', None)
+pandas.set_option('display.max_columns', None)
+pandas.set_option('display.width', None)
+pandas.set_option('display.max_colwidth', -1)
 
 #region Functions
 # Function for get user location for buys location
@@ -154,6 +159,18 @@ def FindProductsByType(type):
     return "Products don't exists"
   else:
     return filtered_products
+
+# Function to clear user cart
+def ClearCart(user, user_type):
+    file = open("./db/db.json", "r+", encoding="utf8")
+    db = json.load(file)
+    file.close()
+
+    db["users"][user_type][user["id"]]["cart"] = {}
+
+    file = open("./db/db.json", "w", encoding="utf8")
+    json.dump(db, file, indent=2, ensure_ascii=False)
+    file.close()
 #endregion
 
 #region Classes
@@ -348,22 +365,6 @@ class Customer:
               product_to_buy["date"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
               db["users"][nerdFlix.user_type.lower()][self.active_user["id"]]["cart"][answer] = product_to_buy
 
-              if len(list(db["buys"].keys())) > 0:
-                id = format(int(list(db["buys"].keys())[-1]) + 1, '04d')
-              else:
-                id = "0001"
-
-              db["buys"][id] = {
-                "name": product_to_buy["name"],
-                "type": product_to_buy["type"],
-                "price": product_to_buy["price"],
-                "can_buy": product_to_buy["can_buy"],
-                "code": product_to_buy["code"],
-                "location": product_to_buy["location"],
-                "date": product_to_buy["date"],
-                "user": self.active_user
-              }
-
               file_to_change = open("./db/db.json", "w", encoding="utf8")
               json.dump(db, file_to_change, indent=2, ensure_ascii=False)
               file_to_change.close()
@@ -402,7 +403,53 @@ class Customer:
 
   # Method to get the user cart
   def MyCart(self):
-    print("My cart!")
+    print("My cart!\n")
+
+    file = open("./db/db.json", "r+", encoding="utf8")
+    db = json.load(file)
+    file.close()
+
+    cart = db["users"][nerdFlix.user_type.lower()][self.active_user["id"]]["cart"]
+    prices = []
+
+    for product in cart.values():
+      prices.append(float(product["price"]))
+
+    df = pandas.DataFrame(data=cart)
+    print(df.T)
+    print(f"Total to pay: R${sum(prices):.2f}")
+    print("\n")
+    answer = input("1 - Go to Payment "
+                   "2 - Clear my cart "
+                   "3 - Back to Dashboard\n")
+    
+    if answer == "1":
+
+      file = open("./db/db.json", "r+", encoding="utf8")
+      db = json.load(file)
+      file.close()
+
+      if len(list(db["buys"].keys())) > 0:
+        id = format(int(list(db["buys"].keys())[-1]) + 1, '04d')
+      else:
+        id = "0001"
+
+      db["buys"][id] = {}
+      db["buys"][id]["items"] = cart
+      db["buys"][id]["user"] = self.active_user
+
+      file_to_change = open("./db/db.json", "w", encoding="utf8")
+      json.dump(db, file_to_change, indent=2, ensure_ascii=False)
+      file_to_change.close()
+
+      ClearCart(self.active_user, nerdFlix.user_type.lower())
+      input("Paid! Press any key to got back to Dashboard!")
+      self.Dashboard()
+    
+    elif answer == "2":
+      ClearCart(self.active_user, nerdFlix.user_type.lower())
+    else:
+      self.Dashboard()
 
   # Method to see buy history
   def MyBuyHistory(self):
@@ -663,3 +710,5 @@ elif nerdFlix.user_type == "Employees":
   user_active = Employeer(nerdFlix.active_user)
   user_active.Dashboard()
 #endregion
+
+
