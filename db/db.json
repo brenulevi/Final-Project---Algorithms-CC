@@ -19,13 +19,13 @@
   "products": {
     "123456": {
       "name": "Como Treinar O Seu Dragão",
-      "type": 3,
+      "type": 2,
       "price": "143.2",
       "can_buy": true
     },
     "987654": {
       "name": "Deus da Guerra",
-      "type": 2,
+      "type": 3 ,
       "price": "2000.0",
       "can_buy": false
     },

@@ -1,2 +1,8 @@
 geocoder==1.38.1
 geopy==2.2.0
+datetime
+json
+string
+secrets
+pandas
+os

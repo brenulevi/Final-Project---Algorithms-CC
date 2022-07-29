@@ -453,7 +453,9 @@ class Customer:
 
   # Method to see buy history
   def MyBuyHistory(self):
-    print("History!")
+    print("My buy history\n")
+    df = pandas.DataFrame(data=["Oi","tudo", "bem"])
+    df
   
   # Method to exit application
   def Exit(self):
