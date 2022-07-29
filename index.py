@@ -280,7 +280,7 @@ class NerdFlix:
 class Customer:
   def __init__(self, active_user) -> None:
     self.active_user = active_user
-    self.procedures = [self.BuyProduct, self.MyBuyHistory, nerdFlix.UpdateAccount, self.Exit]
+    self.procedures = [self.BuyProduct, self.MyCart, self.MyBuyHistory, nerdFlix.UpdateAccount, self.Exit]
     pass
 
   # DASHBOARD
@@ -289,9 +289,10 @@ class Customer:
     answer = input(
         f"Hello {self.active_user['username']}, what do you want to do?\n"
         "1 - Let's buy!\n"
-        "2 - See my buys\n"
-        "3 - Update my account\n"
-        "4 - Exit NerdFlix\n"  
+        "2 - See my cart\n"
+        "3 - See my buy's history\n"
+        "4 - Update my account\n"
+        "5 - Exit NerdFlix\n"  
       )
     if int(answer) - 1 <= 5 and int(answer) - 1 >= 0:
       if int(answer) - 1 == 0:
@@ -333,30 +334,58 @@ class Customer:
               "5 - See my shop cart "
               "6 - Back to Dashboard\n")
     if len(answer) == 6:
-      #buy
       response = ValidateProduct(answer)
       if response["validated"] == True:
         file = open("./db/db.json", "r+", encoding="utf8")
         db = json.load(file)
         file.close()
-
-        product_to_buy = db["products"][answer]
-        product_to_buy["location"] = getLocation()
-        product_to_buy["date"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        db["users"][nerdFlix.user_type.lower()][self.active_user["id"]]["cart"][answer] = product_to_buy
-
-        if len(list(db["buys"].keys())) > 0:
-          id = format(int(list(db["buys"][self.user_type.lower()].keys())[-1]) + 1, '04d')
-        else:
-          id = "0001"
-
-        # db["buys"][id] = product_to_buy
-        # db["buys"][id]["user"] = self.active_user
-
-        file_to_change = open("./db/db.json", "w", encoding="utf8")
-        json.dump(db, file_to_change, indent=2, ensure_ascii=False)
-        file_to_change.close()
         
+        if not answer in db["users"][nerdFlix.user_type.lower()][self.active_user["id"]]["cart"]:
+          product_to_buy = FindByCode(answer)
+          if product_to_buy != "Product don't exists":
+            if product_to_buy["can_buy"] == True:
+              product_to_buy["location"] = getLocation()
+              product_to_buy["date"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+              db["users"][nerdFlix.user_type.lower()][self.active_user["id"]]["cart"][answer] = product_to_buy
+
+              if len(list(db["buys"].keys())) > 0:
+                id = format(int(list(db["buys"].keys())[-1]) + 1, '04d')
+              else:
+                id = "0001"
+
+              db["buys"][id] = {
+                "name": product_to_buy["name"],
+                "type": product_to_buy["type"],
+                "price": product_to_buy["price"],
+                "can_buy": product_to_buy["can_buy"],
+                "code": product_to_buy["code"],
+                "location": product_to_buy["location"],
+                "date": product_to_buy["date"],
+                "user": self.active_user
+              }
+
+              file_to_change = open("./db/db.json", "w", encoding="utf8")
+              json.dump(db, file_to_change, indent=2, ensure_ascii=False)
+              file_to_change.close()
+
+              answer = input("Product added to your cart! What do you want to do now?\n"
+                            "1 - Add another product to your cart "
+                            "2 - See my cart "
+                            "3 - Go to Dashboard\n")
+              if answer == "1":
+                self.BuyProduct(0)
+              elif answer == "2":
+                self.MyCart()
+              else: self.Dashboard()
+            else:
+              input("This product can't be bought now, try again later")
+              self.BuyProduct(0)
+          else:
+            input("Product don't exists")
+            self.BuyProduct(0)
+        else:
+          input("You already have this product on cart!")
+          self.BuyProduct(0)
       else:
         input("Product not found, try another code")
         self.BuyProduct(0)
@@ -370,6 +399,10 @@ class Customer:
       else:
         print("Invalid answer, try again")
         self.BuyProduct(0)
+
+  # Method to get the user cart
+  def MyCart(self):
+    print("My cart!")
 
   # Method to see buy history
   def MyBuyHistory(self):

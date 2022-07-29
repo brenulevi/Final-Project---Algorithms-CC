@@ -8,19 +8,21 @@
         "cart": {
           "123456": {
             "name": "Como Treinar O Seu Dragão",
-            "type": 3,
+            "type": "documentary",
             "price": "143.2",
-            "can_buy": "True",
+            "can_buy": true,
+            "code": "123456",
             "location": "Santa Catarina",
-            "date": "28/07/2022 17:25:10"
+            "date": "29/07/2022 07:22:00"
           },
-          "987654": {
-            "name": "Deus da Guerra",
-            "type": 2,
-            "price": "2000.0",
-            "can_buy": false,
+          "234567": {
+            "name": "Minha Mãe é uma peça",
+            "type": "movie",
+            "price": "10.0",
+            "can_buy": true,
+            "code": "234567",
             "location": "Santa Catarina",
-            "date": "28/07/2022 17:25:28"
+            "date": "29/07/2022 08:03:35"
           }
         }
       }
@@ -38,17 +40,13 @@
       "name": "Como Treinar O Seu Dragão",
       "type": 3,
       "price": "143.2",
-      "can_buy": "True",
-      "location": "Santa Catarina",
-      "date": "28/07/2022 17:25:10"
+      "can_buy": true
     },
     "987654": {
       "name": "Deus da Guerra",
       "type": 2,
       "price": "2000.0",
-      "can_buy": false,
-      "location": "Santa Catarina",
-      "date": "28/07/2022 17:25:28"
+      "can_buy": false
     },
     "234567": {
       "name": "Minha Mãe é uma peça",
@@ -57,5 +55,34 @@
       "can_buy": true
     }
   },
-  "buys": {}
+  "buys": {
+    "0001": {
+      "name": "Como Treinar O Seu Dragão",
+      "type": "documentary",
+      "price": "143.2",
+      "can_buy": true,
+      "code": "123456",
+      "location": "Santa Catarina",
+      "date": "29/07/2022 07:22:00",
+      "user": {
+        "id": "0001",
+        "username": "brenulevi",
+        "password": "123123"
+      }
+    },
+    "0002": {
+      "name": "Minha Mãe é uma peça",
+      "type": "movie",
+      "price": "10.0",
+      "can_buy": true,
+      "code": "234567",
+      "location": "Santa Catarina",
+      "date": "29/07/2022 08:03:35",
+      "user": {
+        "id": "0001",
+        "username": "brenulevi",
+        "password": "123123"
+      }
+    }
+  }
 }
