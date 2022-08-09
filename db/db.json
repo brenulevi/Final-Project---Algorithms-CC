@@ -6,6 +6,12 @@
         "username": "brenulevi",
         "password": "123123",
         "cart": {}
+      },
+      "0002": {
+        "id": "0002",
+        "username": "bernardosoares",
+        "password": "123123",
+        "cart": {}
       }
     },
     "employees": {
@@ -25,7 +31,7 @@
     },
     "987654": {
       "name": "Deus da Guerra",
-      "type": 3 ,
+      "type": 3,
       "price": "2000.0",
       "can_buy": false
     },
@@ -37,6 +43,34 @@
     }
   },
   "buys": {
-    
+    "0001": {
+      "name": "Como Treinar O Seu Dragão",
+      "type": "movie",
+      "price": "143.2",
+      "can_buy": true,
+      "code": "123456",
+      "location": "Santa Catarina",
+      "date": "05/08/2022 11:24:53",
+      "user": {
+        "id": "0001",
+        "username": "brenulevi",
+        "password": "147132"
+      }
+    },
+    "0002": {
+      "name": "Minha Mãe é uma peça",
+      "type": "movie",
+      "price": "10.0",
+      "can_buy": true,
+      "code": "234567",
+      "location": "Santa Catarina",
+      "date": "05/08/2022 11:34:15",
+      "user": {
+        "id": "0002",
+        "username": "bernardosoares",
+        "password": "123123",
+        "cart": {}
+      }
+    }
   }
 }

@@ -16,6 +16,19 @@ pandas.set_option('display.width', None)
 pandas.set_option('display.max_colwidth', -1)
 
 #region Functions
+# Function for get database data
+def getDB():
+  file = open("./db/db.json", "r+", encoding='utf8')
+  db = json.load(file)
+  file.close()
+  return db
+
+# Function for send data to DB
+def sendDB(db):
+  to_change_file = open("./db/db.json", "w", encoding='utf8')
+  json.dump(db, to_change_file, indent=2, ensure_ascii=False)
+  to_change_file.close()
+
 # Function for get user location for buys location
 def getLocation():
   Nomi_locator = Nominatim(user_agent="My app")
@@ -35,9 +48,7 @@ def createSafePassword():
 
 # Function for validate if the user exists or not
 def ValidateCredentials(user_type, username, password, caller):
-  file = open("./db/db.json", "r+", encoding='utf8')
-  db = json.load(file)
-  file.close()
+  db = getDB()
   users = list(db["users"][user_type.lower()].values())
 
   have_account = []
@@ -74,9 +85,7 @@ def ValidateCredentials(user_type, username, password, caller):
 
 # Function for validate if the product exists or not
 def ValidateProduct(code):
-  file = open("./db/db.json", "r+", encoding='utf8')
-  db = json.load(file)
-  file.close()
+  db = getDB()
 
   keys = list(db["products"])
 
@@ -91,9 +100,7 @@ def ValidateProduct(code):
 
 # Function for return all products on db
 def FindAllProducts():
-  file = open("./db/db.json", "r+", encoding='utf8')
-  db = json.load(file)
-  file.close()
+  db = getDB()
 
   values = list(db["products"].values())
   keys = list(db["products"])
@@ -113,9 +120,7 @@ def FindAllProducts():
   
 # Function for return a specific product on db based in code
 def FindByCode(code):
-  file = open("./db/db.json", "r+", encoding='utf8')
-  db = json.load(file)
-  file.close()
+  db = getDB()
 
   values = list(db["products"].values())
   keys = list(db["products"])
@@ -134,9 +139,7 @@ def FindByCode(code):
 
 # Function for return all products based on type passed
 def FindProductsByType(type):
-  file = open("./db/db.json", "r+", encoding='utf8')
-  db = json.load(file)
-  file.close()
+  db = getDB()
 
   values = list(db["products"].values())
   keys = list(db["products"])
@@ -162,15 +165,11 @@ def FindProductsByType(type):
 
 # Function to clear user cart
 def ClearCart(user, user_type):
-    file = open("./db/db.json", "r+", encoding="utf8")
-    db = json.load(file)
-    file.close()
+    db = getDB()
 
     db["users"][user_type][user["id"]]["cart"] = {}
 
-    file = open("./db/db.json", "w", encoding="utf8")
-    json.dump(db, file, indent=2, ensure_ascii=False)
-    file.close()
+    sendDB(db)
 #endregion
 
 #region Classes
@@ -210,12 +209,12 @@ class NerdFlix:
     os.system('cls||clear')
     have_account = input(f"Hello Mr/Ms {self.user_type}, Do you have an account? Type 1 for YES or 2 for NO\n")
     if have_account == "1": 
-      self.Login()
+      return self.Login()
     elif have_account == "2": 
-      self.CreateAccount()
+      return self.CreateAccount()
     else:
       print("Invalid answer, try again!")
-      self.getAccount()
+      return self.getAccount()
 
   # Method to create account if user haven't
   def CreateAccount(self):
@@ -228,9 +227,7 @@ class NerdFlix:
     response = ValidateCredentials(self.user_type, username, password, "create")
     if response["validated"] == True:
       
-      file = open("./db/db.json", "r+", encoding='utf8')
-      db = json.load(file)
-      file.close()
+      db = getDB()
 
       if len(list(db["users"][self.user_type.lower()].keys())) > 0:
         id = format(int(list(db["users"][self.user_type.lower()].keys())[-1]) + 1, '04d')
@@ -245,15 +242,13 @@ class NerdFlix:
       }
 
       db["users"][self.user_type.lower()][id] = user
-      to_change_file = open("./db/db.json", "w", encoding='utf8')
-      json.dump(db, to_change_file, indent=2, ensure_ascii=False)
-      to_change_file.close()
+      sendDB(db)
 
       print("Account created succesfully!")
       self.active_user = user
     else:
       print("We saw here that you already have an account, try to login!")
-      self.Login()
+      return self.Login()
  
   # Method to login user with her credentials
   def Login(self):
@@ -265,14 +260,12 @@ class NerdFlix:
       self.active_user = response["user"]
     else:
       print("Invalid credentials, try again!")
-      self.Login()
+      return self.Login()
 
   # Method to update user data
   def UpdateAccount(self):
     os.system('cls||clear')
-    file = open("./db/db.json", "r+", encoding="utf8")
-    db = json.load(file)
-    file.close()
+    db = getDB()
 
     answer = input(f"Nice! I found you account here and the account info is:\nUsername: {db['users'][self.user_type.lower()][self.active_user['id']]['username']}\nPassword: {db['users'][self.user_type.lower()][self.active_user['id']]['password']}\n"
               "What do you want to change?\n1 - Username\n2 - Password\n")
@@ -280,15 +273,13 @@ class NerdFlix:
     possibilities = ["username", "password"]
 
     if answer != "1" and answer != "2":
-      self.UpdateAccount()
+      return self.UpdateAccount()
     else:
       new_credential = input(f"Type your new {possibilities[int(answer)-1]}:\n")
 
       db["users"][self.user_type.lower()][self.active_user["id"]][possibilities[int(answer)-1]] = new_credential
       
-      to_change_file = open("./db/db.json", "w", encoding='utf8')
-      json.dump(db, to_change_file, indent=2, ensure_ascii=False)
-      to_change_file.close()
+      sendDB(db)
 
       input("Account updated! Press any key to back to dashboard!")
       user_active.active_user = db["users"][self.user_type.lower()][self.active_user["id"]]
@@ -311,14 +302,18 @@ class Customer:
         "4 - Update my account\n"
         "5 - Exit NerdFlix\n"  
       )
-    if int(answer) - 1 <= 5 and int(answer) - 1 >= 0:
-      if int(answer) - 1 == 0:
-        self.BuyProduct(0)
+    try:
+      if int(answer) - 1 <= 5 and int(answer) - 1 >= 0:
+        if int(answer) - 1 == 0:
+          return self.BuyProduct(0)
+        else:
+          return self.procedures[int(answer) - 1]()
       else:
-        self.procedures[int(answer) - 1]()
-    else:
-      print("Invalid answer, try again")
-      self.Dashboard()
+        print("Invalid answer, try again")
+        return self.Dashboard()
+    except ValueError:
+      input("Invalid answer, try again")
+      return self.Dashboard()
 
   # Method to buy products
   def BuyProduct(self, filter_procedure):
@@ -340,7 +335,7 @@ class Customer:
     else:
       print("Products not found")
       input("Press any key to try again")
-      self.BuyProduct(0)
+      return self.BuyProduct(0)
 
     print("Type the product code to buy: ")
     answer = input(
@@ -353,9 +348,7 @@ class Customer:
     if len(answer) == 6:
       response = ValidateProduct(answer)
       if response["validated"] == True:
-        file = open("./db/db.json", "r+", encoding="utf8")
-        db = json.load(file)
-        file.close()
+        db = getDB()
         
         if not answer in db["users"][nerdFlix.user_type.lower()][self.active_user["id"]]["cart"]:
           product_to_buy = FindByCode(answer)
@@ -365,49 +358,55 @@ class Customer:
               product_to_buy["date"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
               db["users"][nerdFlix.user_type.lower()][self.active_user["id"]]["cart"][answer] = product_to_buy
 
-              file_to_change = open("./db/db.json", "w", encoding="utf8")
-              json.dump(db, file_to_change, indent=2, ensure_ascii=False)
-              file_to_change.close()
+              sendDB(db)
+
+              if len(list(db["buys"].keys())) > 0:
+                id = format(int(list(db["buys"].keys())[-1]) + 1, '04d')
+              else:
+                id = "0001"
+
+              db["buys"][id] = product_to_buy
+              db["buys"][id]["user"] = self.active_user
+
+              sendDB(db)
 
               answer = input("Product added to your cart! What do you want to do now?\n"
                             "1 - Add another product to your cart "
                             "2 - See my cart "
                             "3 - Go to Dashboard\n")
               if answer == "1":
-                self.BuyProduct(0)
+                return self.BuyProduct(0)
               elif answer == "2":
-                self.MyCart()
-              else: self.Dashboard()
+                return self.MyCart()
+              else: return self.Dashboard()
             else:
               input("This product can't be bought now, try again later")
-              self.BuyProduct(0)
+              return self.BuyProduct(0)
           else:
             input("Product don't exists")
-            self.BuyProduct(0)
+            return self.BuyProduct(0)
         else:
           input("You already have this product on cart!")
-          self.BuyProduct(0)
+          return self.BuyProduct(0)
       else:
         input("Product not found, try another code")
-        self.BuyProduct(0)
+        return self.BuyProduct(0)
     else:
       if int(answer) > 0 and int(answer) < 5:
-        self.BuyProduct(int(answer) - 1)
+        return self.BuyProduct(int(answer) - 1)
       elif int(answer) == 6:
-        self.Dashboard()
+        return self.Dashboard()
       elif int(answer) == 5:
-        self.MyCart()
+        return self.MyCart()
       else:
         print("Invalid answer, try again")
-        self.BuyProduct(0)
+        return self.BuyProduct(0)
 
   # Method to get the user cart
   def MyCart(self):
     print("My cart!\n")
 
-    file = open("./db/db.json", "r+", encoding="utf8")
-    db = json.load(file)
-    file.close()
+    db = getDB()
 
     cart = db["users"][nerdFlix.user_type.lower()][self.active_user["id"]]["cart"]
     prices = []
@@ -424,10 +423,7 @@ class Customer:
                    "3 - Back to Dashboard\n")
     
     if answer == "1":
-
-      file = open("./db/db.json", "r+", encoding="utf8")
-      db = json.load(file)
-      file.close()
+      db = getDB()
 
       if len(list(db["buys"].keys())) > 0:
         id = format(int(list(db["buys"].keys())[-1]) + 1, '04d')
@@ -438,24 +434,38 @@ class Customer:
       db["buys"][id]["items"] = cart
       db["buys"][id]["user"] = self.active_user
 
-      file_to_change = open("./db/db.json", "w", encoding="utf8")
-      json.dump(db, file_to_change, indent=2, ensure_ascii=False)
-      file_to_change.close()
+      sendDB(db)
 
       ClearCart(self.active_user, nerdFlix.user_type.lower())
       input("Paid! Press any key to got back to Dashboard!")
-      self.Dashboard()
+      return self.Dashboard()
     
     elif answer == "2":
       ClearCart(self.active_user, nerdFlix.user_type.lower())
+      return self.Dashboard()
     else:
       self.Dashboard()
 
   # Method to see buy history
   def MyBuyHistory(self):
     print("My buy history\n")
-    df = pandas.DataFrame(data=["Oi","tudo", "bem"])
-    df
+    
+    db = getDB()
+
+
+    my_buys = []
+    for buy in db["buys"].values():
+      if buy["user"]["id"] == self.active_user["id"]:
+        buy["user"] = {}
+        my_buys.append(buy)
+    
+    df = pandas.DataFrame(data=my_buys)
+    print("\n")
+    print(df)
+    print("\n")
+
+    input("Press any key to go back to Dashboard")
+    self.Dashboard()
   
   # Method to exit application
   def Exit(self):
@@ -479,14 +489,18 @@ class Employeer:
         "5 - Update my account\n"
         "6 - Exit NerdFlix\n"  
       )
-    if int(answer) - 1 <= 5 and int(answer) - 1 >= 0:
-      if int(answer) - 1 == 2:
-        self.UpdateProduct(0)
+    try:
+      if int(answer) - 1 <= 5 and int(answer) - 1 >= 0:
+        if int(answer) - 1 == 2:
+          self.UpdateProduct(0)
+        else:
+          self.procedures[int(answer)-1]()
       else:
-        self.procedures[int(answer)-1]()
-    else:
-      print("Invalid answer! try again")
-      self.Dashboard()
+        print("Invalid answer! try again")
+        return self.Dashboard()
+    except ValueError:
+      print("Invalid answer")
+      return self.Dashboard()
 
   # Method to register a new product in database
   def RegisterProduct(self):
@@ -519,17 +533,13 @@ class Employeer:
     response = ValidateProduct(code)
     if response["validated"] == True:
 
-      file = open("./db/db.json", "r+", encoding='utf8')
-      db = json.load(file)
-      file.close()
+      db = getDB()
 
       db["products"][str(code)] = product
-      to_change_file = open("./db/db.json", "w", encoding='utf8')
-      json.dump(db, to_change_file, indent=2, ensure_ascii=False)
-      to_change_file.close()
+      sendDB(db)
 
       print("Product created!")
-      self.Dashboard()
+      return self.Dashboard()
 
   # Method to search for a product in specific or list they
   def SearchProduct(self):
@@ -554,7 +564,7 @@ class Employeer:
       while end_answer != "1":
         end_answer = input("Press 1 to go back to Dashboard\n")
 
-      self.Dashboard()
+      return self.Dashboard()
     else:
       if answer == "4":
         response = FindByCode(input("What's the product code?\n"))
@@ -566,13 +576,13 @@ class Employeer:
           print("\n")
 
           input("Press Enter to go back to Dashboard")
-          self.Dashboard()
+          return self.Dashboard()
         else:
           answer = input(f"{response}, do you want to try another search? (1 - YES)\n")
           if answer == "1":
-            self.SearchProduct()
+            return self.SearchProduct()
           else:
-            self.Dashboard()
+            return self.Dashboard()
       elif answer == "1" or answer == "2" or answer == "3":
         response = FindProductsByType(int(answer))
 
@@ -584,16 +594,16 @@ class Employeer:
           print("\n")
 
           input("Press Enter to back to Dashboard\n")
-          self.Dashboard()
+          return self.Dashboard()
         else:
           answer = input(f"{response}, do you want to try another search? (1 - YES)\n")
           if answer == "1":
-            self.SearchProduct()
+            return self.SearchProduct()
           else:
-            self.Dashboard()
+            return self.Dashboard()
       else:
         print("Invalid answer, try again")
-        self.SearchProduct()
+        return self.SearchProduct()
 
   # Method to get what product infos will be changed
   def UpdateProduct(self, filter_procedure):
@@ -615,7 +625,7 @@ class Employeer:
     else:
       print("Products not found")
       input("Press any key to try again")
-      self.UpdateProduct(0)
+      return self.UpdateProduct(0)
 
     print("Type the product code to update: ")
     answer = input(
@@ -625,15 +635,15 @@ class Employeer:
               "4 - Show all documentaries  "
               "5 - Back to Dashboard\n")
     if len(answer) == 6:
-      self.ChangeProductOnDb(answer)
+      return self.ChangeProductOnDb(answer)
     else:
       if int(answer) > 0 and int(answer) < 5:
-        self.UpdateProduct(int(answer) - 1)
+        return self.UpdateProduct(int(answer) - 1)
       elif int(answer) == 5:
-        self.Dashboard()
+        return self.Dashboard()
       else:
         print("Invalid answer, try again")
-        self.UpdateProduct(0)
+        return self.UpdateProduct(0)
 
   # Method who actually updates the product in database
   def ChangeProductOnDb(self, code):
@@ -645,17 +655,21 @@ class Employeer:
     print("\n")
 
     while True:
-      answer = int(input(
+      try:
+        answer = int(input(
               "What element do you want to update?\n"
               "1 - Name  "
               "2 - Type  "
               "3 - Price  "
               "4 - Can Buy\n"))
         
-      if answer > 5 and answer < 0:
-        print("Invalid answer, try again")
-      else:
-        break
+        if answer > 5 and answer < 0:
+          print("Invalid answer, try again")
+        else:
+          break
+      except ValueError:
+        input("Value inserted was wrong... I want an integer :(")
+        return self.Dashboard()
 
     code = product["code"]
 
@@ -667,9 +681,7 @@ class Employeer:
     new_value = input(f"Alright, at moment the value is {product[key]}, what'll be the new value?\n")
     product[key] = new_value
 
-    file = open("./db/db.json", "r+", encoding="utf8")
-    db = json.load(file)
-    file.close()
+    db = getDB()
 
     db["products"][code] = product
     if db["products"][code]["type"] == "serie":
@@ -679,21 +691,30 @@ class Employeer:
     else:
       db["products"][code]["type"] = 3
 
-    to_change = open("./db/db.json", "w", encoding="utf8")
-    json.dump(db, to_change, indent=2, ensure_ascii=False)
-    to_change.close()
+    sendDB(db)
 
     print("Atualizado!")
 
     answer = input("Do you want to update more? (1 - YES)\n")
     if answer == "1":
-      self.ChangeProductOnDb(code)
+      return self.ChangeProductOnDb(code)
     else:
-      self.Dashboard()
+      return self.Dashboard()
 
   # Method to see all buys history
   def BuysHistory(self):
-    print("History!!!")
+    print("There is all buys history")
+
+    db = getDB()
+
+    df = pandas.DataFrame(data=db["buys"])
+
+    print("\n")
+    print(df)
+    print("\n")
+
+    input("Press any key to back to dashboard")
+    return self.Dashboard()
 
   # Method to close application
   def Exit(self):
